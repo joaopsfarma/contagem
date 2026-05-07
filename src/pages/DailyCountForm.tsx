@@ -144,8 +144,7 @@ export default function DailyCountForm() {
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="hidden md:grid grid-cols-12 gap-4 p-4 border-b border-gray-100 bg-gray-50/50 font-medium text-gray-500 text-sm">
           <div className="col-span-2">MV</div>
-          <div className="col-span-6">Descrição</div>
-          <div className="col-span-2 text-right">Qtde. Virtual</div>
+          <div className="col-span-8">Descrição</div>
           <div className="col-span-2 text-right">Qtde. Física</div>
         </div>
 
@@ -156,12 +155,8 @@ export default function DailyCountForm() {
                 <span className="md:hidden font-medium">Código:</span>
                 {item.mvCode}
               </div>
-              <div className="md:col-span-6 font-medium text-gray-900">
+              <div className="md:col-span-8 font-medium text-gray-900">
                 {item.name}
-              </div>
-              <div className="md:col-span-2 text-sm text-gray-600 flex justify-between md:justify-end">
-                <span className="md:hidden font-medium">Virtual:</span>
-                {item.virtualQty}
               </div>
               <div className="md:col-span-2 flex justify-end">
                 <input
