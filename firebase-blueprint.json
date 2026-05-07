@@ -1,0 +1,55 @@
+{
+  "entities": {
+    "InventoryItem": {
+      "title": "Inventory Item",
+      "description": "Virtual inventory count uploaded by Pharmacist",
+      "type": "object",
+      "properties": {
+        "mvCode": { "type": "string" },
+        "name": { "type": "string" },
+        "virtualQty": { "type": "number" },
+        "updatedAt": { "type": "timestamp" }
+      },
+      "required": ["mvCode", "name", "virtualQty", "updatedAt"]
+    },
+    "DailyCount": {
+      "title": "Daily Count",
+      "description": "Daily physical count session",
+      "type": "object",
+      "properties": {
+        "createdAt": { "type": "timestamp" },
+        "userId": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["createdAt", "userId", "status"]
+    },
+    "DailyCountItem": {
+      "title": "Daily Count Item",
+      "description": "An item counted physically during a session",
+      "type": "object",
+      "properties": {
+        "countId": { "type": "string" },
+        "mvCode": { "type": "string" },
+        "name": { "type": "string" },
+        "virtualQty": { "type": "number" },
+        "physicalQty": { "type": "number" },
+        "divergence": { "type": "number" }
+      },
+      "required": ["countId", "mvCode", "name", "virtualQty", "physicalQty", "divergence"]
+    }
+  },
+  "firestore": {
+    "/inventory/{mvCode}": {
+      "schema": "InventoryItem",
+      "description": "Current system quantity from CSV"
+    },
+    "/daily_counts/{countId}": {
+      "schema": "DailyCount",
+      "description": "Daily count sessions"
+    },
+    "/daily_counts/{countId}/items/{itemId}": {
+      "schema": "DailyCountItem",
+      "description": "Physical counts for a session"
+    }
+  }
+}

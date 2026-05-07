@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --cor-primaria-roxo: #6a1b9a; /* Vibrant purple approximation if pure value not given, but I'll use CSS vars so it's overridable. Let's use standard hexes if possible, or just exact values the user provided */
+  --cor-secundaria-verde: #8dc63f; /* Standard green Approximation */
+  --cor-texto-claro: #ffffff;
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-brand-purple: var(--cor-primaria-roxo);
+  --color-brand-green: var(--cor-secundaria-verde);
+}
+
+.titulo-rede {
+  color: var(--cor-primaria-roxo);
+  font-family: sans-serif;
+  font-weight: bold;
+}
+
+.banner-gradiente {
+  background: linear-gradient(135deg, var(--cor-primaria-roxo) 0%, var(--cor-secundaria-verde) 100%);
+}
+

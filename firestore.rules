@@ -1,0 +1,87 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidInventoryItem(data) {
+      return data.keys().hasAll(['mvCode', 'name', 'virtualQty', 'updatedAt']) &&
+             data.keys().size() == 4 &&
+             data.mvCode is string && data.mvCode.size() > 0 && data.mvCode.size() <= 100 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 300 &&
+             data.virtualQty is number &&
+             data.updatedAt == request.time;
+    }
+
+    function isValidDailyCount(data) {
+      return data.keys().hasAll(['createdAt', 'userId', 'status']) &&
+             data.keys().size() == 3 &&
+             data.createdAt == request.time &&
+             data.userId == request.auth.uid &&
+             data.status is string && data.status.size() <= 20;
+    }
+
+    function isValidDailyCountItem(data, countId) {
+      return data.keys().hasAll(['countId', 'mvCode', 'name', 'virtualQty', 'physicalQty', 'divergence']) &&
+             data.keys().size() == 6 &&
+             data.countId == countId &&
+             data.mvCode is string && data.mvCode.size() > 0 && data.mvCode.size() <= 100 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 300 &&
+             data.virtualQty is number &&
+             data.physicalQty is number &&
+             data.divergence is number;
+    }
+
+    match /inventory/{mvCode} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(mvCode) && isValidInventoryItem(incoming());
+      allow update: if isSignedIn() && isValidId(mvCode) && isValidInventoryItem(incoming()) && incoming().mvCode == existing().mvCode;
+      allow delete: if isSignedIn() && isValidId(mvCode);
+    }
+
+    match /daily_counts/{countId} {
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(countId) && isValidDailyCount(incoming());
+      allow update: if isSignedIn() && isValidId(countId) &&
+                    isValidDailyCount(incoming()) &&
+                    incoming().userId == existing().userId &&
+                    existing().status != 'completed'; // Terminal state lock
+      allow delete: if isSignedIn() && isValidId(countId) && existing().userId == request.auth.uid;
+
+      match /items/{itemId} {
+        allow get: if isSignedIn() && get(/databases/$(database)/documents/daily_counts/$(countId)).data.userId == request.auth.uid;
+        allow list: if isSignedIn() && get(/databases/$(database)/documents/daily_counts/$(countId)).data.userId == request.auth.uid;
+        allow create: if isSignedIn() && isValidId(countId) && isValidId(itemId) && 
+                      isValidDailyCountItem(incoming(), countId) &&
+                      existsAfter(/databases/$(database)/documents/daily_counts/$(countId)) &&
+                      getAfter(/databases/$(database)/documents/daily_counts/$(countId)).data.userId == request.auth.uid;
+        allow update: if isSignedIn() && isValidId(countId) && isValidId(itemId) &&
+                      isValidDailyCountItem(incoming(), countId) &&
+                      incoming().countId == existing().countId &&
+                      getAfter(/databases/$(database)/documents/daily_counts/$(countId)).data.userId == request.auth.uid;
+        allow delete: if isSignedIn() && isValidId(countId) && isValidId(itemId) &&
+                      get(/databases/$(database)/documents/daily_counts/$(countId)).data.userId == request.auth.uid;
+      }
+    }
+  }
+}
