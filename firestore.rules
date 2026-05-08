@@ -32,10 +32,11 @@ service cloud.firestore {
     }
 
     function isValidDailyCount(data) {
-      return data.keys().hasAll(['createdAt', 'userId', 'status']) &&
-             data.keys().size() == 3 &&
+      return data.keys().hasAll(['createdAt', 'userId', 'userEmail', 'status']) &&
+             data.keys().size() == 4 &&
              data.createdAt == request.time &&
              data.userId == request.auth.uid &&
+             data.userEmail is string && data.userEmail.size() <= 200 &&
              data.status is string && data.status.size() <= 20;
     }
 
@@ -59,8 +60,8 @@ service cloud.firestore {
     }
 
     match /daily_counts/{countId} {
-      allow get: if isSignedIn() && existing().userId == request.auth.uid;
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isSignedIn() && isValidId(countId) && isValidDailyCount(incoming());
       allow update: if isSignedIn() && isValidId(countId) &&
                     isValidDailyCount(incoming()) &&
@@ -69,8 +70,8 @@ service cloud.firestore {
       allow delete: if isSignedIn() && isValidId(countId) && existing().userId == request.auth.uid;
 
       match /items/{itemId} {
-        allow get: if isSignedIn() && get(/databases/$(database)/documents/daily_counts/$(countId)).data.userId == request.auth.uid;
-        allow list: if isSignedIn() && get(/databases/$(database)/documents/daily_counts/$(countId)).data.userId == request.auth.uid;
+        allow get: if isSignedIn();
+        allow list: if isSignedIn();
         allow create: if isSignedIn() && isValidId(countId) && isValidId(itemId) && 
                       isValidDailyCountItem(incoming(), countId) &&
                       existsAfter(/databases/$(database)/documents/daily_counts/$(countId)) &&

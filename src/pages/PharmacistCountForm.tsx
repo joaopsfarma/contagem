@@ -65,6 +65,7 @@ export default function PharmacistCountForm() {
       parentBatch.set(countRef, {
         createdAt: serverTimestamp(),
         userId: user.uid,
+        userEmail: user.email || 'unknown',
         status
       });
       await parentBatch.commit();

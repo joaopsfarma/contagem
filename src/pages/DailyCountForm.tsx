@@ -75,6 +75,7 @@ export default function DailyCountForm() {
       batch.set(countRef, {
         createdAt: serverTimestamp(),
         userId: user.uid,
+        userEmail: user.email || 'unknown',
         status
       });
 

@@ -9,6 +9,7 @@ interface CountSession {
   id: string;
   createdAt: { seconds: number, nanoseconds: number } | Date;
   status: string;
+  userEmail?: string;
 }
 
 interface CountItem {
@@ -33,9 +34,7 @@ export default function CountHistory() {
       if (!user) return;
       try {
         const q = query(
-          collection(db, 'daily_counts'),
-          where('userId', '==', user.uid),
-          // orderBy('createdAt', 'desc') // Need composite index for this to work natively without creating one in console
+          collection(db, 'daily_counts')
         );
         const snap = await getDocs(q);
         const fetchedSessions: CountSession[] = [];
@@ -111,7 +110,7 @@ export default function CountHistory() {
       {sessions.length === 0 ? (
         <div className="bg-white rounded-3xl p-8 text-center border border-gray-100 shadow-sm">
           <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">Nenhum histórico encontrado para o seu usuário.</p>
+          <p className="text-gray-500 text-lg">Nenhum histórico de contagem encontrado.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -127,7 +126,7 @@ export default function CountHistory() {
                   </div>
                   <div className="text-left">
                     <p className="font-semibold text-gray-900 text-lg">
-                      Contagem de {formatDate(session.createdAt)}
+                      Contagem de {formatDate(session.createdAt)} {session.userEmail ? `por ${session.userEmail}` : ''}
                     </p>
                     <p className="text-sm text-gray-500">
                       Status: <span className="capitalize">{session.status === 'completed' ? 'Concluída' : session.status}</span>
